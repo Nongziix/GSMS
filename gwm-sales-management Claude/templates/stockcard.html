@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/stock">สต็อก</a></li>
+        <li class="breadcrumb-item active">Stock Card</li>
+      </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h2><i class="bi bi-journal-text me-2" style="color:var(--gwm-red)"></i>บัตรสต็อก</h2>
+        <p class="text-muted small mb-0">{{ product.STKDES if product else 'ไม่พบข้อมูลสินค้า' }}</p>
+      </div>
+      <span class="badge bg-dark fs-6 mt-1">{{ product.STKCOD if product else 'N/A' }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover datatable w-100">
+        <thead>
+          <tr>
+            <th>วันที่</th>
+            <th>ประเภท</th>
+            <th>เลขที่เอกสาร</th>
+            <th>แผนก</th>
+            <th class="text-end">จำนวน</th>
+            <th class="text-end">ราคา/หน่วย</th>
+            <th class="text-end">มูลค่า</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movements %}
+          <tr>
+            <td>{{ m.DOCDAT }}</td>
+            <td><span class="badge bg-secondary">{{ m.RECTYP }}</span></td>
+            <td class="fw-bold" style="color:var(--gwm-red)">{{ m.DOCNUM }}</td>
+            <td>{{ m.DEPCOD }}</td>
+            <td class="text-end fw-bold">{{ "{:,.0f}".format(m.QUANO) }}</td>
+            <td class="text-end" style="color:var(--text-secondary)">{{ "{:,.2f}".format(m.UNITPR) }}</td>
+            <td class="text-end fw-bold">{{ "{:,.2f}".format(m.TRNVAL) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

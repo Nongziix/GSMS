@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12 d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="bi bi-list-ul me-2" style="color:var(--gwm-red)"></i>รายการรถในสต็อก</h2>
+      <p class="text-muted small mb-0">ข้อมูลสต็อกจาก Express DBF (STMAS)</p>
+    </div>
+    <a href="/settings" class="btn btn-outline-dark btn-sm">
+      <i class="bi bi-arrow-repeat me-1"></i>อัปเดตข้อมูล
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover datatable w-100">
+        <thead>
+          <tr>
+            <th>รหัสสินค้า</th>
+            <th>ชื่อรุ่น / รายละเอียด</th>
+            <th>หมวด</th>
+            <th class="text-end">คงเหลือ</th>
+            <th class="text-center">เครื่องมือ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stock in stocks %}
+          <tr>
+            <td><span class="stkcod-badge">{{ stock.STKCOD }}</span></td>
+            <td>{{ stock.STKDES }}</td>
+            <td>
+              <span class="badge bg-secondary">{{ stock.STKGRP }}</span>
+            </td>
+            <td class="text-end fw-bold {{ 'stock-zero' if stock.QUANO <= 0 else 'stock-ok' }}">
+              {{ "{:,.0f}".format(stock.QUANO) }}
+            </td>
+            <td class="text-center">
+              <a href="{{ url_for('main.stockcard', stkcod=stock.STKCOD) }}"
+                 class="btn btn-sm btn-outline-dark">
+                <i class="bi bi-journal-text me-1"></i>Stock Card
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

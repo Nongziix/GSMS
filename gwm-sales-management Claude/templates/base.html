@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — GSMS</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables -->
+  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- GSMS Custom CSS — Luxury Dark Theme -->
+  <link href="{{ url_for('static', filename='css/gsms.css') }}" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/"><span>GWM</span> GSMS</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/">
+              <i class="bi bi-speedometer2 me-1"></i>แดชบอร์ด
+            </a>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if active_page in ['stock','stockcard','master_data'] %}active{% endif %}"
+               href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-box-seam me-1"></i>สินค้าคงคลัง
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/stock"><i class="bi bi-list-ul me-2"></i>รายการรถในสต็อก</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item {% if active_page == 'master_data' %}active{% endif %}"
+                   href="{{ url_for('main.master_data') }}">
+                  <i class="bi bi-database-gear me-2"></i>จัดการ Master Data
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'sales' %}active{% endif %}" href="#">
+              <i class="bi bi-currency-exchange me-1"></i>การขาย
+            </a>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if active_page == 'purchase' %}active{% endif %}"
+               href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-truck me-1"></i>การจัดซื้อ
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="/purchase/receive-car"><i class="bi bi-box-arrow-in-down me-2"></i>รับรถเข้าสต็อก</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'settings' %}active{% endif %}" href="/settings">
+              <i class="bi bi-gear me-1"></i>ตั้งค่า
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="container-fluid mt-4 px-lg-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('.datatable').DataTable({
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json' },
+        pageLength: 25,
+        order: []
+      });
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

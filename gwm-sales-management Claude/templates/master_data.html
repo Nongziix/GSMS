@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2><i class="bi bi-database-gear me-2" style="color:var(--gwm-red)"></i>Master Data</h2>
+    <p class="text-muted small mb-0">จัดการ Brand, Model, Variant และสีรถยนต์</p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" id="masterTab">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-brand" type="button">
+      <i class="bi bi-shield-fill me-1"></i>Brand
+      <span class="badge bg-secondary ms-1">{{ brands|length }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-model" type="button">
+      <i class="bi bi-car-front me-1"></i>Model
+      <span class="badge bg-secondary ms-1">{{ models|length }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-variant" type="button">
+      <i class="bi bi-layers me-1"></i>Variant
+      <span class="badge bg-secondary ms-1">{{ variants|length }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-color" type="button">
+      <i class="bi bi-palette me-1"></i>Color
+      <span class="badge bg-secondary ms-1">{{ colors|length }}</span>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- BRAND -->
+  <div class="tab-pane fade show active" id="tab-brand">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header"><i class="bi bi-plus-circle me-2"></i>เพิ่ม Brand</div>
+          <div class="card-body">
+            <form method="POST" action="{{ url_for('main.master_data_add', entity='brand') }}">
+              <div class="mb-3">
+                <label class="form-label">ชื่อ Brand <span style="color:var(--gwm-red)">*</span></label>
+                <input type="text" name="brand_name" class="form-control"
+                       placeholder="เช่น GWM, Haval, ORA" required>
+              </div>
+              <button type="submit" class="btn btn-gwm w-100">
+                <i class="bi bi-plus-lg me-1"></i>บันทึก
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">รายการ Brand ทั้งหมด</div>
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead><tr><th width="60">#</th><th>ชื่อ Brand</th><th width="80" class="text-center">ลบ</th></tr></thead>
+              <tbody>
+                {% for b in brands %}
+                <tr>
+                  <td class="text-muted">{{ b.brand_id }}</td>
+                  <td class="fw-bold">{{ b.brand_name }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="confirmDelete('{{ url_for('main.master_data_delete', entity='brand', id=b.brand_id) }}','{{ b.brand_name }}')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="text-center py-4" style="color:var(--text-muted)">ยังไม่มีข้อมูล</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL -->
+  <div class="tab-pane fade" id="tab-model">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header"><i class="bi bi-plus-circle me-2"></i>เพิ่ม Model</div>
+          <div class="card-body">
+            <form method="POST" action="{{ url_for('main.master_data_add', entity='model') }}">
+              <div class="mb-3">
+                <label class="form-label">Brand <span style="color:var(--gwm-red)">*</span></label>
+                <select name="brand_id" class="form-select" required>
+                  <option value="">-- เลือก Brand --</option>
+                  {% for b in brands %}
+                  <option value="{{ b.brand_id }}">{{ b.brand_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ชื่อ Model <span style="color:var(--gwm-red)">*</span></label>
+                <input type="text" name="model_name" class="form-control"
+                       placeholder="เช่น TANK 300, ORA Good Cat" required>
+              </div>
+              <button type="submit" class="btn btn-gwm w-100">
+                <i class="bi bi-plus-lg me-1"></i>บันทึก
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">รายการ Model ทั้งหมด</div>
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead><tr><th width="60">#</th><th>Brand</th><th>ชื่อ Model</th><th width="80" class="text-center">ลบ</th></tr></thead>
+              <tbody>
+                {% for m in models %}
+                <tr>
+                  <td class="text-muted">{{ m.model_id }}</td>
+                  <td><span class="badge bg-dark">{{ m.brand.brand_name }}</span></td>
+                  <td class="fw-bold">{{ m.model_name }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="confirmDelete('{{ url_for('main.master_data_delete', entity='model', id=m.model_id) }}','{{ m.model_name }}')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center py-4" style="color:var(--text-muted)">ยังไม่มีข้อมูล</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT -->
+  <div class="tab-pane fade" id="tab-variant">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header"><i class="bi bi-plus-circle me-2"></i>เพิ่ม Variant</div>
+          <div class="card-body">
+            <form method="POST" action="{{ url_for('main.master_data_add', entity='variant') }}">
+              <div class="mb-3">
+                <label class="form-label">Brand <span style="color:var(--gwm-red)">*</span></label>
+                <select name="brand_id" id="v_brand" class="form-select" required>
+                  <option value="">-- เลือก Brand --</option>
+                  {% for b in brands %}
+                  <option value="{{ b.brand_id }}">{{ b.brand_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Model <span style="color:var(--gwm-red)">*</span></label>
+                <select name="model_id" id="v_model" class="form-select" required disabled>
+                  <option value="">-- เลือก Brand ก่อน --</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ชื่อ Variant <span style="color:var(--gwm-red)">*</span></label>
+                <input type="text" name="variant_name" class="form-control"
+                       placeholder="เช่น 2.0T 4WD HEV AT" required>
+              </div>
+              <button type="submit" class="btn btn-gwm w-100">
+                <i class="bi bi-plus-lg me-1"></i>บันทึก
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">รายการ Variant ทั้งหมด</div>
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead><tr><th width="50">#</th><th>Brand</th><th>Model</th><th>Variant</th><th width="80" class="text-center">ลบ</th></tr></thead>
+              <tbody>
+                {% for v in variants %}
+                <tr>
+                  <td class="text-muted">{{ v.variant_id }}</td>
+                  <td><span class="badge bg-dark">{{ v.brand.brand_name }}</span></td>
+                  <td>{{ v.car_model.model_name }}</td>
+                  <td class="fw-bold">{{ v.variant_name }}</td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="confirmDelete('{{ url_for('main.master_data_delete', entity='variant', id=v.variant_id) }}','{{ v.variant_name }}')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center py-4" style="color:var(--text-muted)">ยังไม่มีข้อมูล</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLOR -->
+  <div class="tab-pane fade" id="tab-color">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header"><i class="bi bi-plus-circle me-2"></i>เพิ่มสี</div>
+          <div class="card-body">
+            <form method="POST" action="{{ url_for('main.master_data_add', entity='color') }}">
+              <div class="mb-3">
+                <label class="form-label">ชื่อสี <span style="color:var(--gwm-red)">*</span></label>
+                <input type="text" name="color_name" class="form-control"
+                       placeholder="เช่น Obsidian Black" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ประเภท <span style="color:var(--gwm-red)">*</span></label>
+                <select name="color_type" class="form-select" required>
+                  <option value="Exterior">Exterior (สีภายนอก)</option>
+                  <option value="Interior">Interior (สีภายใน)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-gwm w-100">
+                <i class="bi bi-plus-lg me-1"></i>บันทึก
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header bg-dark"><i class="bi bi-circle-half me-2"></i>Exterior Colors</div>
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th width="60">#</th><th>ชื่อสี</th><th width="80" class="text-center">ลบ</th></tr></thead>
+                  <tbody>
+                    {% for c in colors if c.color_type == 'Exterior' %}
+                    <tr>
+                      <td class="text-muted">{{ c.color_id }}</td>
+                      <td>{{ c.color_name }}</td>
+                      <td class="text-center">
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="confirmDelete('{{ url_for('main.master_data_delete', entity='color', id=c.color_id) }}','{{ c.color_name }}')">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center py-3" style="color:var(--text-muted)">ยังไม่มีข้อมูล</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header"><i class="bi bi-circle me-2"></i>Interior Colors</div>
+              <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                  <thead><tr><th width="60">#</th><th>ชื่อสี</th><th width="80" class="text-center">ลบ</th></tr></thead>
+                  <tbody>
+                    {% for c in colors if c.color_type == 'Interior' %}
+                    <tr>
+                      <td class="text-muted">{{ c.color_id }}</td>
+                      <td>{{ c.color_name }}</td>
+                      <td class="text-center">
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="confirmDelete('{{ url_for('main.master_data_delete', entity='color', id=c.color_id) }}','{{ c.color_name }}')">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center py-3" style="color:var(--text-muted)">ยังไม่มีข้อมูล</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header bg-danger">
+        <h6 class="modal-title text-white"><i class="bi bi-exclamation-triangle me-2"></i>ยืนยันการลบ</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="mb-1" style="color:var(--text-secondary)">คุณต้องการลบ</p>
+        <p class="fw-bold mb-1" id="del-name"></p>
+        <p class="small" style="color:var(--text-muted)">ไม่สามารถย้อนกลับได้</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center gap-2">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
+        <a id="del-btn" href="#" class="btn btn-danger px-4">ลบ</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Variant: Brand → Model dropdown
+  document.getElementById('v_brand').addEventListener('change', async function () {
+    const sel = document.getElementById('v_model');
+    sel.innerHTML = '<option value="">กำลังโหลด...</option>';
+    sel.disabled = true;
+    if (!this.value) { sel.innerHTML = '<option value="">-- เลือก Brand ก่อน --</option>'; return; }
+    const res = await fetch(`/api/models/${this.value}`);
+    const models = await res.json();
+    sel.innerHTML = '<option value="">-- เลือก Model --</option>';
+    models.forEach(m => sel.innerHTML += `<option value="${m.id}">${m.name}</option>`);
+    sel.disabled = false;
+  });
+
+  // Delete confirm modal
+  function confirmDelete(url, name) {
+    document.getElementById('del-name').textContent = `"${name}"`;
+    document.getElementById('del-btn').href = url;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+  }
+
+  // จำ active tab
+  const saved = sessionStorage.getItem('masterTab');
+  if (saved) {
+    const el = document.querySelector(`[data-bs-target="${saved}"]`);
+    if (el) bootstrap.Tab.getOrCreateInstance(el).show();
+    sessionStorage.removeItem('masterTab');
+  }
+  document.querySelectorAll('form').forEach(f => {
+    f.addEventListener('submit', () => {
+      const active = document.querySelector('#masterTab .nav-link.active');
+      if (active) sessionStorage.setItem('masterTab', active.dataset.bsTarget);
+    });
+  });
+</script>
+{% endblock %}

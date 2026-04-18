@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h2><i class="bi bi-box-arrow-in-down me-2" style="color:var(--gwm-red)"></i>บันทึกรับรถเข้าสต็อก</h2>
+    <p class="text-muted small mb-0">กรอกข้อมูลรายละเอียดรถยนต์รายคัน เพื่อบันทึกเข้าระบบ GSMS</p>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('main.receive_car') }}">
+  <div class="row g-4">
+
+    <!-- ===== ข้อมูลตัวรถ ===== -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-car-front me-2"></i>ข้อมูลรถยนต์</div>
+        <div class="card-body">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">เลขตัวถัง (VIN) <span style="color:var(--gwm-red)">*</span></label>
+              <input type="text" id="vin_input" name="vin_no" class="form-control"
+                     placeholder="17 หลัก" required maxlength="50">
+              <div class="form-text">ใช้เป็น Primary Key ในระบบ</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">เลขเครื่องยนต์ <span style="color:var(--gwm-red)">*</span></label>
+              <input type="text" name="engine_no" class="form-control" required maxlength="50">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Brand</label>
+              <select id="brand_select" class="form-select" required>
+                <option value="">เลือก Brand...</option>
+                {% for brand in brands %}
+                <option value="{{ brand.brand_id }}">{{ brand.brand_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Model</label>
+              <select id="model_select" class="form-select" disabled required>
+                <option value="">เลือก Brand ก่อน</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Variant</label>
+              <select id="variant_select" name="variant_id" class="form-select" disabled required>
+                <option value="">เลือก Model ก่อน</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">สีภายนอก (Exterior)</label>
+              <select name="color_ext_id" class="form-select">
+                <option value="">ระบุสีภายนอก...</option>
+                {% for color in colors_ext %}
+                <option value="{{ color.color_id }}">{{ color.color_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">สีภายใน (Interior)</label>
+              <select name="color_int_id" class="form-select">
+                <option value="">ระบุสีภายใน...</option>
+                {% for color in colors_int %}
+                <option value="{{ color.color_id }}">{{ color.color_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">เลขไมล์ตอนรับเข้า</label>
+              <input type="number" name="mileage_import" class="form-control" value="0" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">วันที่รับรถ</label>
+              <input type="date" name="receive_date" class="form-control" value="{{ now_date }}">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ข้อมูล Express + ราคา ===== -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-receipt me-2"></i>อ้างอิงการสั่งซื้อ (Express)</div>
+        <div class="card-body">
+
+          <div class="mb-3">
+            <label class="form-label">เลขที่เอกสาร (Express)</label>
+            <div class="input-group">
+              <input type="text" id="express_doc_input" name="express_doc_no"
+                     class="form-control" placeholder="เช่น RR001" readonly>
+              <button class="btn btn-primary" type="button"
+                      data-bs-toggle="modal" data-bs-target="#billModal">
+                <i class="bi bi-search me-1"></i>ค้นหาบิล
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">รหัสผู้จำหน่าย (SUPCOD)</label>
+              <input type="text" id="supcod_input" class="form-control bg-light" readonly placeholder="อัตโนมัติ">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">รหัสสินค้า (STKCOD)</label>
+              <input type="text" id="stkcod_input" name="express_stkcod"
+                     class="form-control bg-light" readonly value="รย">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">ชื่อรุ่นรถใน Express</label>
+            <input type="text" id="stkdes_input" class="form-control bg-light" readonly placeholder="จาก STMAS">
+          </div>
+
+          <div class="form-section-title">ข้อมูลต้นทุน</div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label" style="color:var(--gwm-red)">มูลค่าก่อน VAT</label>
+              <input type="number" step="0.01" name="cost_before_vat" id="cost_input"
+                     class="form-control text-end border-primary" value="0.00">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">VAT 7%</label>
+              <input type="number" step="0.01" name="vat_amount" id="vat_input"
+                     class="form-control text-end" value="0.00">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">ยอดสุทธิ</label>
+              <input type="number" step="0.01" name="net_amount" id="net_input"
+                     class="form-control text-end fw-bold" value="0.00">
+            </div>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="auto_calc" checked>
+            <label class="form-check-label" for="auto_calc">
+              คำนวณ VAT และยอดสุทธิอัตโนมัติ
+            </label>
+          </div>
+
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+          <a href="/stock" class="btn btn-light">ยกเลิก</a>
+          <button type="submit" class="btn btn-gwm px-5">
+            <i class="bi bi-check-lg me-2"></i>บันทึกรับรถ
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<!-- ===== Modal: เลือกบิล Express ===== -->
+<div class="modal fade" id="billModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-dark">
+        <h5 class="modal-title">
+          <i class="bi bi-car-front-fill me-2" style="color:var(--gwm-red)"></i>
+          เลือกใบรับสินค้า (หมวด รย/ทส)
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="table-responsive">
+          <table id="billTable" class="table table-hover w-100">
+            <thead>
+              <tr>
+                <th>วันที่</th>
+                <th>เลขที่เอกสาร</th>
+                <th>อ้างอิง (VIN)</th>
+                <th>รหัสสินค้า</th>
+                <th>ชื่อรุ่น</th>
+                <th>ผู้จำหน่าย</th>
+                <th class="text-end">ยอดสุทธิ</th>
+                <th class="text-center">เลือก</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const brandSelect   = document.getElementById('brand_select');
+  const modelSelect   = document.getElementById('model_select');
+  const variantSelect = document.getElementById('variant_select');
+
+  // Brand → Model
+  brandSelect.addEventListener('change', async function () {
+    modelSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
+    modelSelect.disabled = true;
+    variantSelect.innerHTML = '<option value="">เลือก Model ก่อน</option>';
+    variantSelect.disabled = true;
+    if (!this.value) return;
+    const res = await fetch(`/api/models/${this.value}`);
+    const models = await res.json();
+    modelSelect.innerHTML = '<option value="">เลือก Model...</option>';
+    models.forEach(m => modelSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`);
+    modelSelect.disabled = false;
+  });
+
+  // Model → Variant
+  modelSelect.addEventListener('change', async function () {
+    variantSelect.innerHTML = '<option value="">กำลังโหลด...</option>';
+    variantSelect.disabled = true;
+    if (!this.value) return;
+    const res = await fetch(`/api/variants/${this.value}`);
+    const variants = await res.json();
+    variantSelect.innerHTML = '<option value="">เลือก Variant...</option>';
+    variants.forEach(v => variantSelect.innerHTML += `<option value="${v.id}">${v.name}</option>`);
+    variantSelect.disabled = false;
+  });
+
+  // Modal: โหลดบิล Express
+  let billDT = null;
+  document.getElementById('billModal').addEventListener('shown.bs.modal', async function () {
+    if (billDT) return;
+    const res = await fetch('/api/express-bills');
+    const result = await res.json();
+    if (!result.success) return;
+
+    const tbody = document.querySelector('#billTable tbody');
+    tbody.innerHTML = '';
+    result.data.forEach(b => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${b.docdat}</td>
+          <td class="fw-bold" style="color:var(--gwm-red)">${b.docnum}</td>
+          <td style="color:var(--color-success);font-weight:600">${b.youref || '-'}</td>
+          <td>${b.stkcod}</td>
+          <td class="small">${b.stkdes}</td>
+          <td class="small">${b.supname}</td>
+          <td class="text-end fw-bold">${b.netamt.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-success btn-select-bill"
+              data-docnum="${b.docnum}" data-supcod="${b.supcod}"
+              data-stkcod="${b.stkcod}" data-stkdes="${b.stkdes}"
+              data-youref="${b.youref}" data-amount="${b.amount}"
+              data-vatamt="${b.vatamt}" data-netamt="${b.netamt}">
+              เลือก
+            </button>
+          </td>
+        </tr>`;
+    });
+
+    billDT = $('#billTable').DataTable({
+      language: { url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json' },
+      order: [[0, 'desc']]
+    });
+  });
+
+  // เลือกบิล
+  $(document).on('click', '.btn-select-bill', function () {
+    const d = $(this).data();
+    document.getElementById('express_doc_input').value = d.docnum;
+    document.getElementById('supcod_input').value = d.supcod;
+    document.getElementById('stkcod_input').value = d.stkcod;
+    document.getElementById('stkdes_input').value = d.stkdes;
+    if (d.youref && d.youref !== 'None') {
+      document.getElementById('vin_input').value = d.youref;
+    }
+    const autoCalc = document.getElementById('auto_calc');
+    const wasAuto = autoCalc.checked;
+    autoCalc.checked = false;
+    document.getElementById('cost_input').value = parseFloat(d.amount).toFixed(2);
+    document.getElementById('vat_input').value  = parseFloat(d.vatamt).toFixed(2);
+    document.getElementById('net_input').value  = parseFloat(d.netamt).toFixed(2);
+    autoCalc.checked = wasAuto;
+    $('#billModal').modal('hide');
+  });
+
+  // Auto-calc VAT
+  document.getElementById('cost_input').addEventListener('input', function () {
+    if (!document.getElementById('auto_calc').checked) return;
+    const cost = parseFloat(this.value) || 0;
+    document.getElementById('vat_input').value = (cost * 0.07).toFixed(2);
+    document.getElementById('net_input').value = (cost * 1.07).toFixed(2);
+  });
+});
+</script>
+{% endblock %}
